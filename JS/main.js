@@ -26,7 +26,7 @@ logOut.addEventListener('click', ()=>{
     token = ""
 })
 
-let userID = "7"
+let userID = "" //mettre son userID
 let username = ""
 let token = ""
 
@@ -108,7 +108,7 @@ async function addComentaires(msgId, commentText){
     console.log(commentText)
     let url = `${baseURL}comment/${msgId}`
     let body = {
-        content : messageText
+        content : commentText
     }
     let bodySerialise = JSON.stringify(body)
     let fetchParams = {
@@ -120,9 +120,7 @@ async function addComentaires(msgId, commentText){
         body : bodySerialise
     }
     await fetch(url, fetchParams)
-        .then(response=>response.json())
-        .then(data=>{if (data.message == "Expired JWT Token"){console.log("pas de token")}})
-    CommentsPageTemplate()
+    displayMessagesPage()
 }//ajoute un com.
 
 
@@ -225,7 +223,7 @@ function displayMessagesPage(){
 
         const btnsTrashMsg = document.querySelectorAll("#btnSupprMsg")
         const btnsEnVoirPlusMsg = document.querySelectorAll(".btnEnVoirPlusMsg")
-        const idMsg = document.querySelector(".isMsg").value
+        const valueIdMsg = document.querySelector(".btnEnVoirPlusMsg").value
 
         btnsTrashMsg.forEach(btnTrashMsg=>{
             btnTrashMsg.addEventListener('click', ()=>{
@@ -238,7 +236,7 @@ function displayMessagesPage(){
                 const inputComment = document.querySelector("#inputComment")
                 const btnSendComment = document.querySelector("#btnSendComment")
                 btnSendComment.addEventListener("click", ()=>{
-                    addComentaires(inputComment.value)
+                    addComentaires(valueIdMsg+1, inputComment.value)
                     inputComment.value = ""
                 })
             })
@@ -253,7 +251,6 @@ function displayMessagesPage(){
 
 
 //MARCHE BIEN
-
 
 // Send Message
 async function sendMessage(messageText){
@@ -319,7 +316,6 @@ async function requeteNewUtulisateur(username, password){
     await fetch(url, {method : "POST", body:JSON.stringify(body)})
         .then(reponse=>reponse.json())
         .then(data=>{
-            if (data.message == "Expired JWT Token"){freshenerToken}
             if (data == "username already taken"){alert("Le nom d'utulisateur est déjà prit")}
             if (data == "try with 6+ chars for password"){alert("le mdp doit faire plus de 6 caractères !")}
             else{
