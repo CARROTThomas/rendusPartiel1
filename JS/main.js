@@ -42,28 +42,89 @@ function display(content){
 function getHomeTemplate(){
     let template = `
                     <div class="d-flex justify-content-center align-items-center welcome">
-                        <h1 class="titreWelcome">Welcome on API-MESSENGER</h1>
+                        <h1 class="titreWelcome">Welcome on BLOG !</h1>
                     </div>
                    `
     return template
 } //template Home
+async function deletePost(msgId){
+    let url = `${baseURL}posts/${msgId}`
+    let fetchParams = {
+        method: 'Delete',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+    }
+    await fetch(url, fetchParams)
+}//suprr un post
 
-/*
-// fetch New Token
-async function freshenerToken(){
-    let url = `${baseURL}refreshthistoken`
-    let body = {"freshener":`${freshener}`}
-    let headers = {'Content-type': 'application/json'}
-    await fetch(url, {method : "POST", headers, body:JSON.stringify(body)})
-        .then(response=>response.json())
-        .then(data=>{
-            token = data.token
-            freshener = data.freshener
-            console.log("Voici le token : " + data.token)
-            console.log("Voici le freshener : " + data.freshener)
+
+
+
+
+function CommentsPageTemplate(messages){
+
+    let CommentTemplate = "";
+    let sectionSendComment = "" + `<div class="d-flex align-items-center methodeEnvoieMessage">
+                                    <input id="inputComment" class="border col-11" type="text" name="messageAEnvoye" id="" placeholder="send Comment">
+                                    <button id="btnSendComment" class="btn bg-primary col-1 d-flex align-items-center justify-content-center"><i class="bi bi-send-fill"></i></button>
+                                   </div>
+                                  `;
+
+    messages['hydra:member'].forEach(message=>{
+        message.comments.forEach(comments=>{
+            console.log(comments.content)
+            CommentTemplate += templateComment(comments)
         })
+    })
+
+
+    let sectionMessagesTemplate = `
+                                    <div id="conversation" class="d-flex flex-column">
+                                        ${CommentTemplate}
+                                    </div>
+                                    <div>
+                                        ${sectionSendComment}
+                                    </div>
+                                   `
+    return sectionMessagesTemplate;
 }
-*/
+function templateComment(comment){
+    let template = `
+                    <div class="d-flex flex-column align-items-center bg-secondary templateMessage">
+                        <div class="d-flex justify-content-between navMessage">
+                            <p class="fs-5 fw-5"><strong>${comment.user.username}</strong></p>
+                            <p class="fs-5"><strong>${comment.createdAt}</strong></p>
+                        </div>
+                        <div class="container">
+                            <p class="text-center"><strong>${comment.content}</strong></p>
+                        </div>
+                    </div>
+                    `
+    return template
+}
+async function addComentaires(msgId, commentText){
+    console.log(commentText)
+    let url = `${baseURL}comment/${msgId}`
+    let body = {
+        content : messageText
+    }
+    let bodySerialise = JSON.stringify(body)
+    let fetchParams = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body : bodySerialise
+    }
+    await fetch(url, fetchParams)
+        .then(response=>response.json())
+        .then(data=>{if (data.message == "Expired JWT Token"){console.log("pas de token")}})
+    CommentsPageTemplate()
+}//ajoute un com.
+
 
 
 
@@ -80,7 +141,7 @@ async function getMessagesFromApi(){
     return await fetch(url, fetchParams)
         .then(response=>response.json())
         .then(data=>{
-            console.log(data['hydra:member'])
+            //console.log(data['hydra:member'][0].user.username)
             return data
         })
 }
@@ -100,28 +161,56 @@ function getMessagesTemplate(posts){
 
 
     let sectionMessagesTemplate = `
-                            <div id="conversation">
-                                ${messagesTemplate}
-                            </div>
-                            <div>
-                                ${sectionSendMessage}
-                            </div>
-                           `
+                                    <div id="conversation" class="d-flex flex-column">
+                                        ${messagesTemplate}
+                                    </div>
+                                    <div>
+                                        ${sectionSendMessage}
+                                    </div>
+                                   `
     return sectionMessagesTemplate;
 }
 // Template message
 function getMessageTemplate(post){
     //<p class="">${message.author.username}, ${message.id}</p>
-    let template = `
-                    <div class="d-flex justify-content-between align-items-center bg-secondary templateMessage">
-                        <p class=""><strong>${post.content}</strong></p>
+    if (post.user.username == username){
+        let template1 = `
+                    <div class="d-flex flex-column align-items-center bg-secondary templateMessage">
+                        <div class="d-flex justify-content-between navMessage">
+                            <p class="fs-5 fw-5"><strong>${post.user.username}</strong></p>
+                            <p class="fs-5"><strong>${post.createdAt}</strong></p>
+                        </div>
+                        <div class="container">
+                            <p class="text-center"><strong>${post.content}</strong></p>
+                        </div>
+                        <div class="d-flex justify-content-end navBtnEnVoirPlusMsg">
+                        <button id="btnSupprMsg" isMsg class="btn" value="${post.id}"><i class="bi bi-trash-fill"></i></button>
+                        <button class="btn btnEnVoirPlusMsg" ">En voir +</button>
+                        </div>
                     </div>
                     `
-    return template
+        return template1
+    }
+    else{
+        let template2 = `
+                    <div class="d-flex flex-column align-items-center bg-secondary templateMessage">
+                        <div class="d-flex justify-content-between navMessage">
+                            <p class="fs-5 fw-5"><strong>${post.user.username}</strong></p>
+                            <p class="fs-5"><strong>${post.createdAt}</strong></p>
+                        </div>
+                        <div class="container">
+                            <p class="text-center"><strong>${post.content}</strong></p>
+                        </div>
+                        <div class="d-flex justify-content-end navBtnEnVoirPlusMsg">
+                        <button class="btn btnEnVoirPlusMsg isMsg" value="${post.id}">En voir +</button>
+                        </div>
+                    </div>
+                    `
+        return template2
+    }
 }
 // Appell de display avec content{getMessageTemplate{getMessagesFromApi}}, const, addEventListener Send Message
 function displayMessagesPage(){
-
     getMessagesFromApi().then(messages=>{
         display(
             getMessagesTemplate(messages)
@@ -132,11 +221,38 @@ function displayMessagesPage(){
             sendMessage(textMessage.value).then(displayMessagesPage())
             textMessage.value = ""
         })
-    })
 
+
+        const btnsTrashMsg = document.querySelectorAll("#btnSupprMsg")
+        const btnsEnVoirPlusMsg = document.querySelectorAll(".btnEnVoirPlusMsg")
+        const idMsg = document.querySelector(".isMsg").value
+
+        btnsTrashMsg.forEach(btnTrashMsg=>{
+            btnTrashMsg.addEventListener('click', ()=>{
+                deletePost(btnTrashMsg.value).then(displayMessagesPage())
+            })
+        })
+        btnsEnVoirPlusMsg.forEach(btnEnVoirPlusMsg=>{
+            btnEnVoirPlusMsg.addEventListener('click', ()=>{
+                display(CommentsPageTemplate(messages))
+                const inputComment = document.querySelector("#inputComment")
+                const btnSendComment = document.querySelector("#btnSendComment")
+                btnSendComment.addEventListener("click", ()=>{
+                    addComentaires(inputComment.value)
+                    inputComment.value = ""
+                })
+            })
+
+
+        })
+
+    })
 }
 
 
+
+
+//MARCHE BIEN
 
 
 // Send Message
@@ -157,12 +273,11 @@ async function sendMessage(messageText){
     }
     await fetch(url, fetchParams)
         .then(response=>response.json())
-        .then(data=>{if (data.message == "Expired JWT Token"){freshenerToken}})
+        .then(data=>{if (data.message == "Expired JWT Token"){console.log("pas de token")}})
     displayMessagesPage()
 }
 
 
-// Template Register
 function getRegisterTemplate(){
     let template = `
                     <div class="container d-flex align-items-center justify-content-center RegisterTemplatePage">
@@ -175,8 +290,7 @@ function getRegisterTemplate(){
                     </div>
                     `
     return template
-}
-// Appell de display avec content{getRegisterTemplate}, const, addEventListener, test
+}// Template Register
 function displayRegisterPage(){
     display(getRegisterTemplate())
 
@@ -195,7 +309,7 @@ function displayRegisterPage(){
             requeteNewUtulisateur(inputRegisterUsername.value, inputRegisterPassword.value)
         }
     })
-}
+}// Appell de display avec content{getRegisterTemplate}, const, addEventListener, test
 async function requeteNewUtulisateur(username, password){
     let url = `${baseURL}registeruser`
     let body = {
@@ -217,7 +331,6 @@ async function requeteNewUtulisateur(username, password){
         })
 
 }
-
 
 
 function getLoginTemplate(){
@@ -250,9 +363,7 @@ function displayLoginTemplate(){
             requeteLoginUtulisateur(inputLoginUsername.value, inputLoginPassword.value).then(displayMessagesPage)
             console.log(inputLoginUsername.value, inputLoginPassword.value)
         }
-
     })
-
 }
 async function requeteLoginUtulisateur(username, password){
     let url = `${baseURL}login_check`

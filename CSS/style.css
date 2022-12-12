@@ -83,6 +83,24 @@ nav
     overflow: scroll;
 }
 
+.navMessage
+{
+    width: 100%;
+}
+
+.navBtnEnVoirPlusMsg
+{
+    width: 100%;
+}
+
+.btnEnVoirPlusMsg
+{
+    background-color: green;
+    color: blue;
+    margin-right: 1em;
+    margin-bottom: .5em;
+}
+
 .templateMessage
 {
     border: 1px solid grey;
